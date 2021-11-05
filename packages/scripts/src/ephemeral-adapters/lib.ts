@@ -4,7 +4,7 @@ const { red, blue } = chalk
 const { log } = console
 
 export const ACTIONS: string[] = ['start', 'stop']
-export const HELM_CHART_DIR = 'chainlink/cl-adapter' //'./cl-adapter-0.1.15.tgz'
+export const HELM_CHART_DIR = 'chainlink/cl-adapter'
 export const IMAGE_REPOSITORY = '795953128386.dkr.ecr.us-west-2.amazonaws.com/adapters/'
 export const IMAGE_TAG = 'develop-latest'
 export const NAMESPACE = 'ephemeral-adapters'
@@ -137,7 +137,7 @@ export const checkArgs = (): Inputs => {
     imageRepository,
     helmChartDir,
     helmValuesOverride,
-    name: '',
+    name,
   }
   if (!name) inputs.name = generateName(inputs)
 
@@ -150,12 +150,14 @@ export const checkArgs = (): Inputs => {
  */
 export const deployAdapter = (config: Inputs): void => {
   // pull the latest helm chart
-  const pullHelmChart = new Shell().exec(`helm pull ${HELM_CHART_DIR}`)
-  if (pullHelmChart.code !== 0) {
-    process.exitCode = 1
-    throw red.bold(
-      `Failed to pull the chainlink helm chart repository: ${pullHelmChart.toString()}`,
-    )
+  if (!process.env['USE_HELM_CACHE']) {
+    const pullHelmChart = new Shell().exec(`helm pull ${HELM_CHART_DIR}`)
+    if (pullHelmChart.code !== 0) {
+      process.exitCode = 1
+      throw red.bold(
+        `Failed to pull the chainlink helm chart repository: ${pullHelmChart.toString()}`,
+      )
+    }
   }
 
   // deploy the chart

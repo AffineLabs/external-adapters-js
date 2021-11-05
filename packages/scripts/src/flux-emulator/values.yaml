@@ -17,17 +17,8 @@ adapter:
 
 envVars:
   LOG_LEVEL: info
-  METRICS_PORT: 9080
-
-podSecurityContext:
-  fsGroup: 2000
-
-securityContext:
-  capabilities:
-    drop:
-      - ALL
-  runAsUser: 1000
-  runAsNonRoot: true
+  EXPERIMENTAL_METRICS_ENABLED: false
+  CACHE_ENABLED: false
 
 service:
   port: 6060
@@ -50,7 +41,6 @@ readinessProbe:
   periodSeconds: 20
   timeoutSeconds: 10
 
-# vpa uses requests:limits as a direct ratio
 resources:
   limits:
     cpu: 100m
@@ -61,20 +51,9 @@ resources:
 
 hpa:
   enabled: false
-  # The k8s server side diff will add target: '0'
-  # if this is not declared, which breaks edits to the
-  # HPA resource. With this workaround targetAverage
-  # is unused when targetAverage is defined.
-  target: 1
-  targetAverage: 8
 
-# vertical pod autoscaler
-# this is the min/max for requests only
 vpa:
-  enabled: true
-  max:
-    cpu: 300m
-    memory: 384Mi
-  min:
-    cpu: 15m
-    memory: 32Mi
+  enabled: false
+
+serviceMonitor:
+  enabled: false
